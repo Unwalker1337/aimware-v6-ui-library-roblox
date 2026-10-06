@@ -1013,32 +1013,32 @@ function Aimware:CreateWindow(cfg)
             })
         })
 
-        -- 2 Columns (Width ~362px each)
+        -- 2 Columns (Width ~360px each, 18px horizontal gap, 16px vertical spacing)
         local LeftCol = Create("Frame", {
             Name = "LeftColumn",
             Parent = DefaultPage,
-            Size = UDim2.new(0.5, -8, 0, 0),
+            Size = UDim2.new(0.5, -9, 0, 0),
             AutomaticSize = Enum.AutomaticSize.Y,
             Position = UDim2.new(0, 0, 0, 0),
             BackgroundTransparency = 1
         }, {
             Create("UIListLayout", {
                 SortOrder = Enum.SortOrder.LayoutOrder,
-                Padding = UDim.new(0, 10)
+                Padding = UDim.new(0, 16)
             })
         })
 
         local RightCol = Create("Frame", {
             Name = "RightColumn",
             Parent = DefaultPage,
-            Size = UDim2.new(0.5, -8, 0, 0),
+            Size = UDim2.new(0.5, -9, 0, 0),
             AutomaticSize = Enum.AutomaticSize.Y,
-            Position = UDim2.new(0.5, 8, 0, 0),
+            Position = UDim2.new(0.5, 9, 0, 0),
             BackgroundTransparency = 1
         }, {
             Create("UIListLayout", {
                 SortOrder = Enum.SortOrder.LayoutOrder,
-                Padding = UDim.new(0, 10)
+                Padding = UDim.new(0, 16)
             })
         })
 
@@ -1160,28 +1160,28 @@ function Aimware:CreateWindow(cfg)
             local SubLeftCol = Create("Frame", {
                 Name = "LeftColumn",
                 Parent = SubPage,
-                Size = UDim2.new(0.5, -8, 0, 0),
+                Size = UDim2.new(0.5, -9, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
                 Position = UDim2.new(0, 0, 0, 0),
                 BackgroundTransparency = 1
             }, {
                 Create("UIListLayout", {
                     SortOrder = Enum.SortOrder.LayoutOrder,
-                    Padding = UDim.new(0, 10)
+                    Padding = UDim.new(0, 16)
                 })
             })
 
             local SubRightCol = Create("Frame", {
                 Name = "RightColumn",
                 Parent = SubPage,
-                Size = UDim2.new(0.5, -8, 0, 0),
+                Size = UDim2.new(0.5, -9, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
-                Position = UDim2.new(0.5, 8, 0, 0),
+                Position = UDim2.new(0.5, 9, 0, 0),
                 BackgroundTransparency = 1
             }, {
                 Create("UIListLayout", {
                     SortOrder = Enum.SortOrder.LayoutOrder,
-                    Padding = UDim.new(0, 10)
+                    Padding = UDim.new(0, 16)
                 })
             })
 
@@ -1225,20 +1225,20 @@ function Aimware:CreateWindow(cfg)
                 BackgroundColor3 = Aimware.Theme.SectionBg,
                 BorderSizePixel = 0
             }, {
-                Create("UICorner", { CornerRadius = UDim.new(0, 6) }),
+                Create("UICorner", { CornerRadius = UDim.new(0, 8) }),
                 Create("UIStroke", { Color = Aimware.Theme.SectionStroke, Thickness = 1 })
             })
 
             local SecHeader = Create("Frame", {
                 Name = "SecHeader",
                 Parent = SectionCard,
-                Size = UDim2.new(1, 0, 0, 28),
+                Size = UDim2.new(1, 0, 0, 30),
                 BackgroundTransparency = 1
             }, {
                 Create("TextLabel", {
                     Name = "Title",
                     Size = UDim2.new(1, -30, 1, 0),
-                    Position = UDim2.new(0, 12, 0, 0),
+                    Position = UDim2.new(0, 14, 0, 0),
                     BackgroundTransparency = 1,
                     Font = Enum.Font.GothamBold,
                     Text = secTitle,
@@ -1253,7 +1253,7 @@ function Aimware:CreateWindow(cfg)
                     Name = "SecIcon",
                     Parent = SecHeader,
                     AnchorPoint = Vector2.new(1, 0.5),
-                    Position = UDim2.new(1, -10, 0.5, 0),
+                    Position = UDim2.new(1, -12, 0.5, 0),
                     Size = UDim2.new(0, 14, 0, 14),
                     BackgroundTransparency = 1,
                     Image = secIcon,
@@ -1264,20 +1264,20 @@ function Aimware:CreateWindow(cfg)
             local ElementsList = Create("Frame", {
                 Name = "ElementsList",
                 Parent = SectionCard,
-                Position = UDim2.new(0, 0, 0, 28),
+                Position = UDim2.new(0, 0, 0, 30),
                 Size = UDim2.new(1, 0, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
                 BackgroundTransparency = 1
             }, {
                 Create("UIPadding", {
-                    PaddingLeft = UDim.new(0, 12),
-                    PaddingRight = UDim.new(0, 12),
-                    PaddingTop = UDim.new(0, 2),
-                    PaddingBottom = UDim.new(0, 10)
+                    PaddingLeft = UDim.new(0, 14),
+                    PaddingRight = UDim.new(0, 14),
+                    PaddingTop = UDim.new(0, 4),
+                    PaddingBottom = UDim.new(0, 14)
                 }),
                 Create("UIListLayout", {
                     SortOrder = Enum.SortOrder.LayoutOrder,
-                    Padding = UDim.new(0, 6)
+                    Padding = UDim.new(0, 8)
                 })
             })
 
