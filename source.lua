@@ -455,18 +455,25 @@ function Aimware:CreateWindow(cfg)
         end
     end)
 
-    -- General Settings Modal
+    -- UIScale for DPI scaling support
+    local WindowScale = Create("UIScale", {
+        Parent = MainFrame,
+        Scale = 1.0
+    })
+
+    -- General Settings Modal (1:1 with Aimware v6 screenshot)
     local SettingsPopup = Create("Frame", {
         Name = "SettingsPopup",
         Parent = OverlayLayer,
         Position = UDim2.new(1, -225, 0, 46),
-        Size = UDim2.new(0, 215, 0, 240),
+        Size = UDim2.new(0, 215, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
         BackgroundColor3 = self.Theme.WindowBg,
         BorderSizePixel = 0,
         Visible = false,
-        ZIndex = 600
+        ZIndex = 900
     }, {
-        Create("UICorner", { CornerRadius = UDim.new(0, 8) }),
+        Create("UICorner", { CornerRadius = UDim.new(0, 6) }),
         Create("UIStroke", { Color = self.Theme.WindowStroke, Thickness = 1 }),
         Create("UIPadding", {
             PaddingLeft = UDim.new(0, 12),
@@ -476,7 +483,7 @@ function Aimware:CreateWindow(cfg)
         }),
         Create("UIListLayout", {
             SortOrder = Enum.SortOrder.LayoutOrder,
-            Padding = UDim.new(0, 10)
+            Padding = UDim.new(0, 8)
         })
     })
 
@@ -496,10 +503,11 @@ function Aimware:CreateWindow(cfg)
 
     SettingsBtn.MouseButton1Click:Connect(ToggleSettingsMenu)
 
-    -- Quick Settings Rows
-    local function AddSettingsRow(lbl, ctrlGen, order)
+    -- Row Builder Helper
+    local function AddSettingsRow(lbl, order)
         local row = Create("Frame", {
-            Size = UDim2.new(1, 0, 0, 20),
+            Parent = SettingsPopup,
+            Size = UDim2.new(1, 0, 0, 22),
             BackgroundTransparency = 1,
             LayoutOrder = order or 1
         })
@@ -513,88 +521,294 @@ function Aimware:CreateWindow(cfg)
             TextSize = 11,
             TextXAlignment = Enum.TextXAlignment.Left
         })
-        ctrlGen(row)
         return row
     end
 
-    AddSettingsRow("Dpi Scale", function(row)
+    -- 1. Dpi Scale (Dropdown)
+    local dpiRow = AddSettingsRow("Dpi Scale", 1)
+    local dpiBtn = Create("TextButton", {
+        Parent = dpiRow,
+        AnchorPoint = Vector2.new(1, 0.5),
+        Position = UDim2.new(1, 0, 0.5, 0),
+        Size = UDim2.new(0, 100, 0, 20),
+        BackgroundColor3 = self.Theme.ControlBg,
+        Text = "",
+        AutoButtonColor = false
+    }, {
+        Create("UICorner", { CornerRadius = UDim.new(0, 4) }),
+        Create("UIStroke", { Color = self.Theme.ControlStroke, Thickness = 1 }),
         Create("TextLabel", {
-            Parent = row,
-            AnchorPoint = Vector2.new(1, 0.5),
-            Position = UDim2.new(1, 0, 0.5, 0),
-            Size = UDim2.new(0, 90, 0, 18),
-            BackgroundColor3 = self.Theme.ControlBg,
+            Name = "SelectedText",
+            Size = UDim2.new(1, -20, 1, 0),
+            Position = UDim2.new(0, 6, 0, 0),
+            BackgroundTransparency = 1,
             Font = Enum.Font.GothamMedium,
             Text = "100% (default)",
             TextColor3 = self.Theme.TextPrimary,
-            TextSize = 10
-        }, {
-            Create("UICorner", { CornerRadius = UDim.new(0, 4) })
-        })
-    end, 1)
-
-    AddSettingsRow("Theme", function(row)
-        Create("TextLabel", {
-            Parent = row,
+            TextSize = 10,
+            TextXAlignment = Enum.TextXAlignment.Left
+        }),
+        Create("ImageLabel", {
             AnchorPoint = Vector2.new(1, 0.5),
-            Position = UDim2.new(1, 0, 0.5, 0),
-            Size = UDim2.new(0, 90, 0, 18),
-            BackgroundColor3 = self.Theme.ControlBg,
+            Position = UDim2.new(1, -5, 0.5, 0),
+            Size = UDim2.new(0, 10, 0, 10),
+            BackgroundTransparency = 1,
+            Image = self.Icons.ChevronDown,
+            ImageColor3 = self.Theme.TextSecondary
+        })
+    })
+
+    dpiBtn.MouseButton1Click:Connect(function()
+        if WindowScale.Scale == 1.0 then
+            WindowScale.Scale = 1.25
+            dpiBtn.SelectedText.Text = "125%"
+        elseif WindowScale.Scale == 1.25 then
+            WindowScale.Scale = 0.85
+            dpiBtn.SelectedText.Text = "85%"
+        else
+            WindowScale.Scale = 1.0
+            dpiBtn.SelectedText.Text = "100% (default)"
+        end
+    end)
+
+    -- 2. Theme (Dropdown)
+    local themeRow = AddSettingsRow("Theme", 2)
+    local themeBtn = Create("TextButton", {
+        Parent = themeRow,
+        AnchorPoint = Vector2.new(1, 0.5),
+        Position = UDim2.new(1, 0, 0.5, 0),
+        Size = UDim2.new(0, 100, 0, 20),
+        BackgroundColor3 = self.Theme.ControlBg,
+        Text = "",
+        AutoButtonColor = false
+    }, {
+        Create("UICorner", { CornerRadius = UDim.new(0, 4) }),
+        Create("UIStroke", { Color = self.Theme.ControlStroke, Thickness = 1 }),
+        Create("TextLabel", {
+            Name = "SelectedText",
+            Size = UDim2.new(1, -20, 1, 0),
+            Position = UDim2.new(0, 6, 0, 0),
+            BackgroundTransparency = 1,
             Font = Enum.Font.GothamMedium,
             Text = "Default",
             TextColor3 = self.Theme.TextPrimary,
-            TextSize = 10
-        }, {
-            Create("UICorner", { CornerRadius = UDim.new(0, 4) })
-        })
-    end, 2)
-
-    AddSettingsRow("Menu Key", function(row)
-        local keyBtn = Create("TextButton", {
-            Parent = row,
-            AnchorPoint = Vector2.new(1, 0.5),
-            Position = UDim2.new(1, 0, 0.5, 0),
-            Size = UDim2.new(0, 60, 0, 18),
-            BackgroundColor3 = self.Theme.Accent,
-            Font = Enum.Font.GothamBold,
-            Text = ToggleKey.Name,
-            TextColor3 = Color3.fromRGB(255, 255, 255),
             TextSize = 10,
-            AutoButtonColor = false
-        }, {
-            Create("UICorner", { CornerRadius = UDim.new(0, 4) })
-        })
-        keyBtn.MouseButton1Click:Connect(function()
-            keyBtn.Text = "..."
-            local conn
-            conn = UserInputService.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.Keyboard then
-                    ToggleKey = input.KeyCode
-                    keyBtn.Text = ToggleKey.Name
-                    conn:Disconnect()
-                end
-            end)
-        end)
-    end, 3)
-
-    AddSettingsRow("Show UI Hints", function(row)
-        Create("Frame", {
-            Parent = row,
+            TextXAlignment = Enum.TextXAlignment.Left
+        }),
+        Create("ImageLabel", {
             AnchorPoint = Vector2.new(1, 0.5),
-            Position = UDim2.new(1, 0, 0.5, 0),
-            Size = UDim2.new(0, 26, 0, 14),
-            BackgroundColor3 = self.Theme.Accent
-        }, {
-            Create("UICorner", { CornerRadius = UDim.new(1, 0) }),
-            Create("Frame", {
-                Size = UDim2.new(0, 10, 0, 10),
-                Position = UDim2.new(1, -12, 0.5, -5),
-                BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            }, {
-                Create("UICorner", { CornerRadius = UDim.new(1, 0) })
-            })
+            Position = UDim2.new(1, -5, 0.5, 0),
+            Size = UDim2.new(0, 10, 0, 10),
+            BackgroundTransparency = 1,
+            Image = self.Icons.ChevronDown,
+            ImageColor3 = self.Theme.TextSecondary
         })
-    end, 4)
+    })
+
+    -- 3. Menu Key (Red Pill Keybind default Insert)
+    local menuKeyRow = AddSettingsRow("Menu Key", 3)
+    local menuKeyBtn = Create("TextButton", {
+        Parent = menuKeyRow,
+        AnchorPoint = Vector2.new(1, 0.5),
+        Position = UDim2.new(1, 0, 0.5, 0),
+        Size = UDim2.new(0, 65, 0, 18),
+        BackgroundColor3 = self.Theme.Accent,
+        Font = Enum.Font.GothamBold,
+        Text = ToggleKey.Name,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        TextSize = 10,
+        AutoButtonColor = false
+    }, {
+        Create("UICorner", { CornerRadius = UDim.new(0, 4) })
+    })
+
+    menuKeyBtn.MouseButton1Click:Connect(function()
+        menuKeyBtn.Text = "..."
+        local conn
+        conn = UserInputService.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Keyboard then
+                ToggleKey = input.KeyCode
+                menuKeyBtn.Text = ToggleKey.Name
+                conn:Disconnect()
+            end
+        end)
+    end)
+
+    -- 4. Console Key (Dark Button default None)
+    local consoleKeyRow = AddSettingsRow("Console Key", 4)
+    local consoleKeyBtn = Create("TextButton", {
+        Parent = consoleKeyRow,
+        AnchorPoint = Vector2.new(1, 0.5),
+        Position = UDim2.new(1, 0, 0.5, 0),
+        Size = UDim2.new(0, 60, 0, 18),
+        BackgroundColor3 = self.Theme.ControlBg,
+        Font = Enum.Font.GothamMedium,
+        Text = "None",
+        TextColor3 = self.Theme.TextSecondary,
+        TextSize = 10,
+        AutoButtonColor = false
+    }, {
+        Create("UICorner", { CornerRadius = UDim.new(0, 4) }),
+        Create("UIStroke", { Color = self.Theme.ControlStroke, Thickness = 1 })
+    })
+
+    -- 5. Show Binds (Dropdown)
+    local bindsRow = AddSettingsRow("Show Binds", 5)
+    local bindsBtn = Create("TextButton", {
+        Parent = bindsRow,
+        AnchorPoint = Vector2.new(1, 0.5),
+        Position = UDim2.new(1, 0, 0.5, 0),
+        Size = UDim2.new(0, 80, 0, 20),
+        BackgroundColor3 = self.Theme.ControlBg,
+        Text = "",
+        AutoButtonColor = false
+    }, {
+        Create("UICorner", { CornerRadius = UDim.new(0, 4) }),
+        Create("UIStroke", { Color = self.Theme.ControlStroke, Thickness = 1 }),
+        Create("TextLabel", {
+            Name = "SelectedText",
+            Size = UDim2.new(1, -20, 1, 0),
+            Position = UDim2.new(0, 6, 0, 0),
+            BackgroundTransparency = 1,
+            Font = Enum.Font.GothamMedium,
+            Text = "Off",
+            TextColor3 = self.Theme.TextPrimary,
+            TextSize = 10,
+            TextXAlignment = Enum.TextXAlignment.Left
+        }),
+        Create("ImageLabel", {
+            AnchorPoint = Vector2.new(1, 0.5),
+            Position = UDim2.new(1, -5, 0.5, 0),
+            Size = UDim2.new(0, 10, 0, 10),
+            BackgroundTransparency = 1,
+            Image = self.Icons.ChevronDown,
+            ImageColor3 = self.Theme.TextSecondary
+        })
+    })
+
+    -- 6. Show UI Hints (Toggle)
+    local hintsRow = AddSettingsRow("Show UI Hints", 6)
+    local hintsState = true
+    local hintsSwitch = Create("TextButton", {
+        Parent = hintsRow,
+        AnchorPoint = Vector2.new(1, 0.5),
+        Position = UDim2.new(1, 0, 0.5, 0),
+        Size = UDim2.new(0, 28, 0, 15),
+        BackgroundColor3 = self.Theme.Accent,
+        Text = "",
+        AutoButtonColor = false
+    }, {
+        Create("UICorner", { CornerRadius = UDim.new(1, 0) })
+    })
+
+    local hintsThumb = Create("Frame", {
+        Parent = hintsSwitch,
+        Size = UDim2.new(0, 11, 0, 11),
+        Position = UDim2.new(1, -13, 0.5, -5.5),
+        BackgroundColor3 = self.Theme.SwitchThumbOn,
+        BorderSizePixel = 0
+    }, {
+        Create("UICorner", { CornerRadius = UDim.new(1, 0) })
+    })
+
+    hintsSwitch.MouseButton1Click:Connect(function()
+        hintsState = not hintsState
+        local targetColor = hintsState and self.Theme.Accent or self.Theme.SwitchOff
+        local targetPos = hintsState and UDim2.new(1, -13, 0.5, -5.5) or UDim2.new(0, 2, 0.5, -5.5)
+        Tween(hintsSwitch, TweenInfo.new(0.18), { BackgroundColor3 = targetColor })
+        Tween(hintsThumb, TweenInfo.new(0.18), { Position = targetPos })
+    end)
+
+    -- 7. UI Opacity (Compact Slider 1:1 Aimware)
+    local opacityRow = Create("Frame", {
+        Parent = SettingsPopup,
+        Size = UDim2.new(1, 0, 0, 26),
+        BackgroundTransparency = 1,
+        LayoutOrder = 7
+    })
+
+    Create("TextLabel", {
+        Parent = opacityRow,
+        Size = UDim2.new(0.5, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Font = Enum.Font.GothamMedium,
+        Text = "UI Opacity",
+        TextColor3 = self.Theme.TextPrimary,
+        TextSize = 11,
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+
+    local opacityContainer = Create("Frame", {
+        Parent = opacityRow,
+        AnchorPoint = Vector2.new(1, 0),
+        Position = UDim2.new(1, 0, 0, 3),
+        Size = UDim2.new(0, 95, 1, -3),
+        BackgroundTransparency = 1
+    })
+
+    local opacityTrack = Create("TextButton", {
+        Parent = opacityContainer,
+        Position = UDim2.new(0, 0, 0, 3),
+        Size = UDim2.new(1, 0, 0, 4),
+        BackgroundColor3 = self.Theme.ControlBg,
+        Text = "",
+        AutoButtonColor = false
+    }, {
+        Create("UICorner", { CornerRadius = UDim.new(1, 0) }),
+        Create("UIStroke", { Color = self.Theme.ControlStroke, Thickness = 1 })
+    })
+
+    local opacityFill = Create("Frame", {
+        Parent = opacityTrack,
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundColor3 = self.Theme.Accent,
+        BorderSizePixel = 0
+    }, {
+        Create("UICorner", { CornerRadius = UDim.new(1, 0) })
+    })
+
+    local opacityValLabel = Create("TextLabel", {
+        Parent = opacityContainer,
+        Position = UDim2.new(0, 0, 0, 10),
+        Size = UDim2.new(1, 0, 0, 12),
+        BackgroundTransparency = 1,
+        Font = Enum.Font.GothamMedium,
+        Text = "100%",
+        TextColor3 = self.Theme.TextSecondary,
+        TextSize = 10,
+        TextXAlignment = Enum.TextXAlignment.Right
+    })
+
+    local opacitySliding = false
+    local function UpdateOpacity(input)
+        local trackAbs = opacityTrack.AbsolutePosition
+        local trackSize = opacityTrack.AbsoluteSize
+        local pct = math.clamp((input.Position.X - trackAbs.X) / trackSize.X, 0, 1)
+        local val = math.floor(pct * 100)
+        opacityFill.Size = UDim2.new(pct, 0, 1, 0)
+        opacityValLabel.Text = val .. "%"
+        MainFrame.BackgroundTransparency = (1 - pct) * 0.7
+        Sidebar.BackgroundTransparency = (1 - pct) * 0.7
+    end
+
+    opacityTrack.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            opacitySliding = true
+            UpdateOpacity(input)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            opacitySliding = false
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if opacitySliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            UpdateOpacity(input)
+        end
+    end)
 
     -- ====================
     -- MAIN CONTENT PAGES
@@ -854,8 +1068,10 @@ function Aimware:CreateWindow(cfg)
 
             if TabObj.ActivePage then
                 TabObj.ActivePage.Frame.Visible = true
+                TabObj.ActivePage.Frame.CanvasPosition = Vector2.new(0, 0)
             else
                 DefaultPage.Visible = true
+                DefaultPage.CanvasPosition = Vector2.new(0, 0)
             end
         end
 
