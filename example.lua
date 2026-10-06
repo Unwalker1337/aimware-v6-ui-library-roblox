@@ -352,7 +352,57 @@ WorldHelper:CreateToggle({ Name = "Damage Indicator", Default = true })
 WorldHelper:CreateDropdown({ Name = "Kill Effect", Options = {"Off", "Lightning", "Headshot Pop"}, Default = "Off" })
 
 -- ========================================================
--- TAB 5: MISCELLANEOUS
+-- TAB 5: INVENTORY CHANGER
+-- ========================================================
+local InvTab = Window:CreateTab({
+    Name = "Inventory",
+    Icon = Aimware.Icons.Inventory,
+    MasterSwitch = true
+})
+
+local InvTLoadout = InvTab:CreateSubTab("T Loadout")
+local InvCTLoadout = InvTab:CreateSubTab("CT Loadout")
+
+local InvEquipSec = InvTLoadout:CreateSection("Equipment", "Left")
+InvEquipSec:CreateDropdown({
+    Name = "Agent Model",
+    Options = {"Default", "Balkan Guerilla", "Street Soldier", "Seal Team 6", "FBI SWAT"},
+    Default = "Balkan Guerilla"
+})
+InvEquipSec:CreateDropdown({
+    Name = "Gloves Skin",
+    Options = {"Default", "Sport Gloves | Vice", "Specialist | Crimson Kimono", "Driver Gloves | Snow Leopard"},
+    Default = "Sport Gloves | Vice"
+})
+InvEquipSec:CreateDropdown({
+    Name = "Melee / Knife",
+    Options = {"Default", "Karambit | Doppler (Phase 2)", "Butterfly | Fade", "M9 Bayonet | Lore", "Skeleton Knife | Slaughter"},
+    Default = "Karambit | Doppler (Phase 2)"
+})
+InvEquipSec:CreateSlider({ Name = "Wear Rating", Min = 0.00, Max = 1.00, Default = 0.01, Decimals = 2 })
+InvEquipSec:CreateSlider({ Name = "StatTrak™ Kills", Min = 0, Max = 9999, Default = 1337 })
+
+local InvWeaponsSec = InvTLoadout:CreateSection("Weapon Skins", "Right", Aimware.Icons.Pistol)
+InvWeaponsSec:CreateDropdown({
+    Name = "Rifle (AK-47)",
+    Options = {"Default", "Fire Serpent", "Wild Lotus", "Asiimov", "Vulcan", "Case Hardened (Blue Gem)"},
+    Default = "Fire Serpent"
+})
+InvWeaponsSec:CreateDropdown({
+    Name = "Sniper (AWP)",
+    Options = {"Default", "Dragon Lore", "Gungnir", "Desert Hydra", "Fade", "Asiimov"},
+    Default = "Dragon Lore"
+})
+InvWeaponsSec:CreateDropdown({
+    Name = "Pistol (Desert Eagle)",
+    Options = {"Default", "Printstream", "Blaze", "Fennec Fox", "Emerald Jörmungandr"},
+    Default = "Printstream"
+})
+InvWeaponsSec:CreateToggle({ Name = "Filter Non-Market Items", Default = true })
+InvWeaponsSec:CreateToggle({ Name = "Live Apply in Match", Default = true })
+
+-- ========================================================
+-- TAB 6: MISCELLANEOUS
 -- ========================================================
 local MiscTab = Window:CreateTab({
     Name = "Miscellaneous",
@@ -388,7 +438,7 @@ MiscMovement:CreateToggle({ Name = "Fast ladder", Default = true })
 MiscMovement:CreateToggle({ Name = "Quick Stop", Default = true })
 
 -- ========================================================
--- TAB 6: CONFIGURATIONS (PINNED)
+-- TAB 7: CONFIGURATIONS (PINNED)
 -- ========================================================
 local ConfigTab = Window:CreateTab({
     Name = "Configurations",
@@ -428,7 +478,7 @@ ConfigSec:CreateFileList({
 })
 
 -- ========================================================
--- TAB 7: LUA SCRIPTS (PINNED)
+-- TAB 8: LUA SCRIPTS (PINNED)
 -- ========================================================
 local LuaTab = Window:CreateTab({
     Name = "Lua Scripts",

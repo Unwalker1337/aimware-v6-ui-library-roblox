@@ -53,27 +53,64 @@ local Aimware = {
         SwitchThumbOn = Color3.fromRGB(255, 255, 255),
         Hover = Color3.fromRGB(28, 36, 48),
     },
-    -- 100% Guaranteed Working Roblox Lucide Asset IDs
-    Icons = {
-        Logo = "rbxassetid://10709818534",        -- Crosshair / Target
-        Legitbot = "rbxassetid://10734975692",    -- Swords / Aim
-        Ragebot = "rbxassetid://10734962068",     -- Skull
-        Visuals = "rbxassetid://10723346959",     -- Eye / ESP
-        World = "rbxassetid://10723346959",       -- Eye / World
-        Inventory = "rbxassetid://10734909540",   -- Package / Box
-        Misc = "rbxassetid://10747383470",        -- Wrench / Tools
-        Configs = "rbxassetid://10734941499",     -- Save / Floppy Disk
-        Lua = "rbxassetid://10709810463",         -- Code </ >
-        Settings = "rbxassetid://10734950309",    -- Settings Gear
-        Search = "rbxassetid://10734943674",      -- Search Lens
-        Play = "rbxassetid://10734923549",        -- Play
-        Save = "rbxassetid://10734941499",        -- Save
-        Trash = "rbxassetid://10747362393",       -- Trash
-        Refresh = "rbxassetid://10734933222",     -- Refresh
-        ChevronDown = "rbxassetid://10709790948", -- Down Chevron
-        Pistol = "rbxassetid://10709818534"       -- Sub-icon
-    },
     ActivePopups = {}
+}
+
+-- ========================================================
+-- Custom Asset Manager for 1:1 Authentic Aimware Icons
+-- ========================================================
+local ICONS_BASE_URL = "https://raw.githubusercontent.com/Unwalker1337/aimware-v6-ui-library-roblox/main/icons/clean/"
+local IconCache = {}
+
+local function ResolveIcon(name, fallbackId)
+    if IconCache[name] then
+        return IconCache[name]
+    end
+    local getasset = getcustomasset or getsynasset
+    if getasset and writefile and isfile and makefolder then
+        local folder = "aimware_v6_assets"
+        if not isfolder(folder) then
+            pcall(makefolder, folder)
+        end
+        local filePath = folder .. "/" .. name .. ".png"
+        if not isfile(filePath) then
+            local success, body = pcall(function()
+                return game:HttpGet(ICONS_BASE_URL .. name .. ".png?raw=true")
+            end)
+            if success and body and #body > 50 then
+                pcall(writefile, filePath, body)
+            end
+        end
+        if isfile(filePath) then
+            local success, asset = pcall(getasset, filePath)
+            if success and asset then
+                IconCache[name] = asset
+                return asset
+            end
+        end
+    end
+    IconCache[name] = fallbackId
+    return fallbackId
+end
+
+Aimware.Icons = {
+    Logo = ResolveIcon("logo", "rbxassetid://10709818534"),
+    Legitbot = ResolveIcon("legitbot", "rbxassetid://10734975692"),
+    Ragebot = ResolveIcon("ragebot", "rbxassetid://10734962068"),
+    Visuals = ResolveIcon("visuals", "rbxassetid://10723346959"),
+    World = ResolveIcon("world", "rbxassetid://10723346959"),
+    Inventory = ResolveIcon("inventory", "rbxassetid://10734909540"),
+    Misc = ResolveIcon("misc", "rbxassetid://10747383470"),
+    Configs = ResolveIcon("configs", "rbxassetid://10734941499"),
+    Lua = ResolveIcon("lua", "rbxassetid://10709810463"),
+    Settings = ResolveIcon("settings", "rbxassetid://10734950309"),
+    Search = ResolveIcon("search", "rbxassetid://10734943674"),
+    Play = "rbxassetid://10734923549",
+    Save = ResolveIcon("configs", "rbxassetid://10734941499"),
+    Trash = "rbxassetid://10747362393",
+    Refresh = "rbxassetid://10734933222",
+    ChevronDown = "rbxassetid://10709790948",
+    Pistol = ResolveIcon("legitbot", "rbxassetid://10709818534")
 }
 
 local function Create(className, properties, children)
@@ -971,7 +1008,18 @@ function Aimware:CreateWindow(cfg)
     function WindowObj:CreateTab(tabCfg)
         tabCfg = tabCfg or {}
         local TabName = tabCfg.Name or "Tab"
-        local TabIcon = tabCfg.Icon or Aimware.Icons.Ragebot
+        local TabIcon = tabCfg.Icon
+        if type(TabIcon) == "string" then
+            if Aimware.Icons[TabIcon] then
+                TabIcon = Aimware.Icons[TabIcon]
+            else
+                local titleCase = TabIcon:sub(1,1):upper() .. TabIcon:sub(2):lower()
+                if Aimware.Icons[titleCase] then
+                    TabIcon = Aimware.Icons[titleCase]
+                end
+            end
+        end
+        TabIcon = TabIcon or Aimware.Icons.Ragebot
         local IsPinned = tabCfg.Pinned or false
         local HasMasterSwitch = tabCfg.MasterSwitch ~= false
         local MasterCallback = tabCfg.Callback or function() end
@@ -1081,8 +1129,8 @@ function Aimware:CreateWindow(cfg)
 
         function TabObj:Select()
             for _, t in pairs(WindowObj.Tabs) do
-                t.ActiveBar.Visible = false
-                t.IconImg.ImageColor3 = Aimware.Theme.TextSecondary
+                if t.ActiveBar then t.ActiveBar.Visible = false end
+                if t.IconImg then t.IconImg.ImageColor3 = Aimware.Theme.TextSecondary end
                 if t.DefaultPage and t.DefaultPage.Frame then
                     t.DefaultPage.Frame.Visible = false
                 end
@@ -1093,7 +1141,7 @@ function Aimware:CreateWindow(cfg)
 
             WindowObj.ActiveTab = TabObj
             ActiveBar.Visible = true
-            IconImg.ImageColor3 = Color3.fromRGB(255, 255, 255)
+            IconImg.ImageColor3 = Aimware.Theme.Accent
             TitleLabel.Text = TabName
 
             if HasMasterSwitch then
