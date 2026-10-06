@@ -68,7 +68,7 @@ local function ResolveIcon(name, fallbackId)
     end
     local getasset = getcustomasset or getsynasset
     if getasset and writefile and isfile and makefolder then
-        local folder = "aimware_v6_assets"
+        local folder = "aimware_v6_assets_v2"
         if not isfolder(folder) then
             pcall(makefolder, folder)
         end
@@ -134,7 +134,7 @@ end
 function Aimware:CreateWindow(cfg)
     cfg = cfg or {}
     local Title = cfg.Title or "Aimware"
-    local Size = cfg.Size or UDim2.new(0, 830, 0, 540)
+    local Size = cfg.Size or UDim2.new(0, 830, 0, 560)
     local ToggleKey = cfg.ToggleKey or Enum.KeyCode.Insert
     local AccentColor = cfg.AccentColor or self.Theme.Accent
 
@@ -383,7 +383,7 @@ function Aimware:CreateWindow(cfg)
         Name = "Header",
         Parent = MainFrame,
         Position = UDim2.new(0, 52, 0, 0),
-        Size = UDim2.new(1, -52, 0, 48),
+        Size = UDim2.new(1, -52, 0, 40),
         BackgroundTransparency = 1
     })
 
@@ -921,8 +921,8 @@ function Aimware:CreateWindow(cfg)
     local ContentContainer = Create("Frame", {
         Name = "ContentContainer",
         Parent = MainFrame,
-        Position = UDim2.new(0, 52, 0, 48),
-        Size = UDim2.new(1, -52, 1, -48),
+        Position = UDim2.new(0, 52, 0, 40),
+        Size = UDim2.new(1, -52, 1, -40),
         BackgroundTransparency = 1
     })
 
@@ -1075,7 +1075,7 @@ function Aimware:CreateWindow(cfg)
             Parent = TabBtn,
             AnchorPoint = Vector2.new(0.5, 0.5),
             Position = UDim2.new(0.5, 0, 0.5, 0),
-            Size = UDim2.new(0, 20, 0, 20),
+            Size = UDim2.new(0, 24, 0, 24),
             BackgroundTransparency = 1,
             Image = TabIcon,
             ImageColor3 = Aimware.Theme.TextSecondary
@@ -1090,15 +1090,14 @@ function Aimware:CreateWindow(cfg)
             ScrollBarThickness = 4,
             ScrollBarImageColor3 = Color3.fromRGB(45, 56, 72),
             CanvasSize = UDim2.new(0, 0, 0, 0),
-            AutomaticCanvasSize = Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
             Visible = false
         }, {
             Create("UIPadding", {
-                PaddingLeft = UDim.new(0, 14),
-                PaddingRight = UDim.new(0, 14),
-                PaddingTop = UDim.new(0, 10),
-                PaddingBottom = UDim.new(0, 14)
+                PaddingLeft = UDim.new(0, 12),
+                PaddingRight = UDim.new(0, 12),
+                PaddingTop = UDim.new(0, 8),
+                PaddingBottom = UDim.new(0, 10)
             })
         })
 
@@ -1110,36 +1109,47 @@ function Aimware:CreateWindow(cfg)
             AutomaticSize = Enum.AutomaticSize.Y,
             BackgroundTransparency = 1,
             GroupTransparency = (HasMasterSwitch and not TabObj.MasterState) and 0.55 or 0
+        }, {
+            Create("UIListLayout", {
+                FillDirection = Enum.FillDirection.Horizontal,
+                SortOrder = Enum.SortOrder.LayoutOrder,
+                Padding = UDim.new(0, 14)
+            })
         })
 
-        -- 2 Columns (Width ~360px each, 18px horizontal gap, 16px vertical spacing)
+        -- 2 Columns (Mathematically symmetric: 50% - 7px each, 14px horizontal gap, 10px vertical card spacing)
         local LeftCol = Create("Frame", {
             Name = "LeftColumn",
             Parent = PageContainer,
-            Size = UDim2.new(0.5, -9, 0, 0),
+            Size = UDim2.new(0.5, -7, 0, 0),
             AutomaticSize = Enum.AutomaticSize.Y,
-            Position = UDim2.new(0, 0, 0, 0),
-            BackgroundTransparency = 1
+            BackgroundTransparency = 1,
+            LayoutOrder = 1
         }, {
             Create("UIListLayout", {
                 SortOrder = Enum.SortOrder.LayoutOrder,
-                Padding = UDim.new(0, 16)
+                Padding = UDim.new(0, 10)
             })
         })
 
         local RightCol = Create("Frame", {
             Name = "RightColumn",
             Parent = PageContainer,
-            Size = UDim2.new(0.5, -9, 0, 0),
+            Size = UDim2.new(0.5, -7, 0, 0),
             AutomaticSize = Enum.AutomaticSize.Y,
-            Position = UDim2.new(0.5, 9, 0, 0),
-            BackgroundTransparency = 1
+            BackgroundTransparency = 1,
+            LayoutOrder = 2
         }, {
             Create("UIListLayout", {
                 SortOrder = Enum.SortOrder.LayoutOrder,
-                Padding = UDim.new(0, 16)
+                Padding = UDim.new(0, 10)
             })
         })
+
+        -- Dynamic canvas sizing for reliable scrolling when content expands
+        PageContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+            DefaultPage.CanvasSize = UDim2.new(0, 0, 0, PageContainer.AbsoluteSize.Y + 20)
+        end)
 
         -- Interaction blocker when disabled
         local Blocker = Create("Frame", {
@@ -1306,10 +1316,10 @@ function Aimware:CreateWindow(cfg)
                 Visible = false
             }, {
                 Create("UIPadding", {
-                    PaddingLeft = UDim.new(0, 14),
-                    PaddingRight = UDim.new(0, 14),
-                    PaddingTop = UDim.new(0, 10),
-                    PaddingBottom = UDim.new(0, 14)
+                    PaddingLeft = UDim.new(0, 12),
+                    PaddingRight = UDim.new(0, 12),
+                    PaddingTop = UDim.new(0, 8),
+                    PaddingBottom = UDim.new(0, 10)
                 })
             })
 
@@ -1320,35 +1330,45 @@ function Aimware:CreateWindow(cfg)
                 AutomaticSize = Enum.AutomaticSize.Y,
                 BackgroundTransparency = 1,
                 GroupTransparency = (HasMasterSwitch and not TabObj.MasterState) and 0.55 or 0.0
+            }, {
+                Create("UIListLayout", {
+                    FillDirection = Enum.FillDirection.Horizontal,
+                    SortOrder = Enum.SortOrder.LayoutOrder,
+                    Padding = UDim.new(0, 14)
+                })
             })
 
             local SubLeftCol = Create("Frame", {
                 Name = "LeftColumn",
                 Parent = SubPageContainer,
-                Size = UDim2.new(0.5, -9, 0, 0),
+                Size = UDim2.new(0.5, -7, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
-                Position = UDim2.new(0, 0, 0, 0),
-                BackgroundTransparency = 1
+                BackgroundTransparency = 1,
+                LayoutOrder = 1
             }, {
                 Create("UIListLayout", {
                     SortOrder = Enum.SortOrder.LayoutOrder,
-                    Padding = UDim.new(0, 16)
+                    Padding = UDim.new(0, 10)
                 })
             })
 
             local SubRightCol = Create("Frame", {
                 Name = "RightColumn",
                 Parent = SubPageContainer,
-                Size = UDim2.new(0.5, -9, 0, 0),
+                Size = UDim2.new(0.5, -7, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
-                Position = UDim2.new(0.5, 9, 0, 0),
-                BackgroundTransparency = 1
+                BackgroundTransparency = 1,
+                LayoutOrder = 2
             }, {
                 Create("UIListLayout", {
                     SortOrder = Enum.SortOrder.LayoutOrder,
-                    Padding = UDim.new(0, 16)
+                    Padding = UDim.new(0, 10)
                 })
             })
+
+            SubPageContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+                SubPage.CanvasSize = UDim2.new(0, 0, 0, SubPageContainer.AbsoluteSize.Y + 20)
+            end)
 
             -- Interaction blocker when disabled
             local SubBlocker = Create("Frame", {
@@ -1410,18 +1430,18 @@ function Aimware:CreateWindow(cfg)
             local SecHeader = Create("Frame", {
                 Name = "SecHeader",
                 Parent = SectionCard,
-                Size = UDim2.new(1, 0, 0, 30),
+                Size = UDim2.new(1, 0, 0, 24),
                 BackgroundTransparency = 1
             }, {
                 Create("TextLabel", {
                     Name = "Title",
                     Size = UDim2.new(1, -30, 1, 0),
-                    Position = UDim2.new(0, 14, 0, 0),
+                    Position = UDim2.new(0, 12, 0, 0),
                     BackgroundTransparency = 1,
                     Font = Enum.Font.GothamBold,
                     Text = secTitle,
                     TextColor3 = Aimware.Theme.TextPrimary,
-                    TextSize = 13,
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
             })
@@ -1431,8 +1451,8 @@ function Aimware:CreateWindow(cfg)
                     Name = "SecIcon",
                     Parent = SecHeader,
                     AnchorPoint = Vector2.new(1, 0.5),
-                    Position = UDim2.new(1, -12, 0.5, 0),
-                    Size = UDim2.new(0, 14, 0, 14),
+                    Position = UDim2.new(1, -10, 0.5, 0),
+                    Size = UDim2.new(0, 13, 0, 13),
                     BackgroundTransparency = 1,
                     Image = secIcon,
                     ImageColor3 = Aimware.Theme.TextSecondary
@@ -1442,20 +1462,20 @@ function Aimware:CreateWindow(cfg)
             local ElementsList = Create("Frame", {
                 Name = "ElementsList",
                 Parent = SectionCard,
-                Position = UDim2.new(0, 0, 0, 30),
+                Position = UDim2.new(0, 0, 0, 24),
                 Size = UDim2.new(1, 0, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
                 BackgroundTransparency = 1
             }, {
                 Create("UIPadding", {
-                    PaddingLeft = UDim.new(0, 14),
-                    PaddingRight = UDim.new(0, 14),
-                    PaddingTop = UDim.new(0, 4),
-                    PaddingBottom = UDim.new(0, 14)
+                    PaddingLeft = UDim.new(0, 12),
+                    PaddingRight = UDim.new(0, 12),
+                    PaddingTop = UDim.new(0, 2),
+                    PaddingBottom = UDim.new(0, 6)
                 }),
                 Create("UIListLayout", {
                     SortOrder = Enum.SortOrder.LayoutOrder,
-                    Padding = UDim.new(0, 8)
+                    Padding = UDim.new(0, 3)
                 })
             })
 
@@ -1480,33 +1500,33 @@ function Aimware:CreateWindow(cfg)
                 local Row = Create("Frame", {
                     Name = Name .. "_ToggleRow",
                     Parent = ElementsList,
-                    Size = UDim2.new(1, 0, 0, 22),
+                    Size = UDim2.new(1, 0, 0, 19),
                     BackgroundTransparency = 1
                 })
 
                 Create("TextLabel", {
                     Parent = Row,
-                    Size = UDim2.new(1, -70, 1, 0),
+                    Size = UDim2.new(1, -65, 1, 0),
                     BackgroundTransparency = 1,
                     Font = Enum.Font.GothamMedium,
                     Text = Name,
                     TextColor3 = Aimware.Theme.TextPrimary,
-                    TextSize = 12,
+                    TextSize = 11,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
 
                 local RightControls = Create("Frame", {
                     Parent = Row,
                     AnchorPoint = Vector2.new(1, 0.5),
-                    Position = UDim2.new(1, 0, 0.5, 0),
-                    Size = UDim2.new(0, 70, 1, 0),
+                    Position = UDim2.new(1, -2, 0.5, 0),
+                    Size = UDim2.new(0, 65, 1, 0),
                     BackgroundTransparency = 1
                 }, {
                     Create("UIListLayout", {
                         FillDirection = Enum.FillDirection.Horizontal,
                         HorizontalAlignment = Enum.HorizontalAlignment.Right,
                         VerticalAlignment = Enum.VerticalAlignment.Center,
-                        Padding = UDim.new(0, 6),
+                        Padding = UDim.new(0, 5),
                         SortOrder = Enum.SortOrder.LayoutOrder
                     })
                 })
@@ -1515,7 +1535,7 @@ function Aimware:CreateWindow(cfg)
                     local colorVal = tCfg.ColorPicker.Default or Color3.fromRGB(255, 255, 255)
                     Create("TextButton", {
                         Parent = RightControls,
-                        Size = UDim2.new(0, 12, 0, 12),
+                        Size = UDim2.new(0, 11, 0, 11),
                         BackgroundColor3 = colorVal,
                         BorderSizePixel = 0,
                         Text = "",
@@ -1530,7 +1550,7 @@ function Aimware:CreateWindow(cfg)
                 if HasGear then
                     local gearBtn = Create("ImageButton", {
                         Parent = RightControls,
-                        Size = UDim2.new(0, 13, 0, 13),
+                        Size = UDim2.new(0, 12, 0, 12),
                         BackgroundTransparency = 1,
                         Image = Aimware.Icons.Settings,
                         ImageColor3 = Aimware.Theme.TextSecondary,
@@ -1545,7 +1565,7 @@ function Aimware:CreateWindow(cfg)
                 local Switch = Create("TextButton", {
                     Name = "Switch",
                     Parent = RightControls,
-                    Size = UDim2.new(0, 28, 0, 15),
+                    Size = UDim2.new(0, 24, 0, 13),
                     BackgroundColor3 = State and Aimware.Theme.Accent or Aimware.Theme.SwitchOff,
                     Text = "",
                     AutoButtonColor = false,
@@ -1556,8 +1576,8 @@ function Aimware:CreateWindow(cfg)
 
                 local Thumb = Create("Frame", {
                     Parent = Switch,
-                    Size = UDim2.new(0, 11, 0, 11),
-                    Position = State and UDim2.new(1, -13, 0.5, -5.5) or UDim2.new(0, 2, 0.5, -5.5),
+                    Size = UDim2.new(0, 9, 0, 9),
+                    Position = State and UDim2.new(1, -11, 0.5, -4.5) or UDim2.new(0, 2, 0.5, -4.5),
                     BackgroundColor3 = State and Aimware.Theme.SwitchThumbOn or Aimware.Theme.SwitchThumbOff,
                     BorderSizePixel = 0
                 }, {
@@ -1568,7 +1588,7 @@ function Aimware:CreateWindow(cfg)
                     State = val
                     local targetColor = State and Aimware.Theme.Accent or Aimware.Theme.SwitchOff
                     local thumbColor = State and Aimware.Theme.SwitchThumbOn or Aimware.Theme.SwitchThumbOff
-                    local targetPos = State and UDim2.new(1, -13, 0.5, -5.5) or UDim2.new(0, 2, 0.5, -5.5)
+                    local targetPos = State and UDim2.new(1, -11, 0.5, -4.5) or UDim2.new(0, 2, 0.5, -4.5)
 
                     Tween(Switch, TweenInfo.new(0.18), { BackgroundColor3 = targetColor })
                     Tween(Thumb, TweenInfo.new(0.18), { Position = targetPos, BackgroundColor3 = thumbColor })
@@ -1602,40 +1622,40 @@ function Aimware:CreateWindow(cfg)
                 local Decimals = sCfg.Decimals or 0
                 local Callback = sCfg.Callback or function() end
 
-                -- In Aimware v6: Label is Left, Slider Track is Right (~150px wide), Value is directly below the track!
+                -- In Aimware v6: Label is Left, Slider Track is Right (~135px wide), Value is directly below the track!
                 local Row = Create("Frame", {
                     Name = Name .. "_SliderRow",
                     Parent = ElementsList,
-                    Size = UDim2.new(1, 0, 0, 26),
+                    Size = UDim2.new(1, 0, 0, 20),
                     BackgroundTransparency = 1
                 })
 
                 Create("TextLabel", {
                     Parent = Row,
-                    Size = UDim2.new(1, -165, 1, 0),
+                    Size = UDim2.new(1, -145, 1, 0),
                     BackgroundTransparency = 1,
                     Font = Enum.Font.GothamMedium,
                     Text = Name,
                     TextColor3 = Aimware.Theme.TextPrimary,
-                    TextSize = 12,
+                    TextSize = 11,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
 
-                -- Right-aligned slider container (Width: 155px)
+                -- Right-aligned slider container (Width: 135px)
                 local SliderContainer = Create("Frame", {
                     Parent = Row,
-                    AnchorPoint = Vector2.new(1, 0),
-                    Position = UDim2.new(1, 0, 0, 3),
-                    Size = UDim2.new(0, 155, 1, -3),
+                    AnchorPoint = Vector2.new(1, 0.5),
+                    Position = UDim2.new(1, -2, 0.5, 0),
+                    Size = UDim2.new(0, 135, 1, 0),
                     BackgroundTransparency = 1
                 })
 
-                -- Slider Track (Height 4px)
+                -- Slider Track (Height 3px)
                 local Track = Create("TextButton", {
                     Name = "Track",
                     Parent = SliderContainer,
-                    Position = UDim2.new(0, 0, 0, 3),
-                    Size = UDim2.new(1, 0, 0, 4),
+                    Position = UDim2.new(0, 0, 0, 2),
+                    Size = UDim2.new(1, 0, 0, 3),
                     BackgroundColor3 = Aimware.Theme.ControlBg,
                     Text = "",
                     AutoButtonColor = false
@@ -1658,8 +1678,8 @@ function Aimware:CreateWindow(cfg)
                 -- Value Label (Positioned right below the track, matching Aimware v6!)
                 local ValLabel = Create("TextLabel", {
                     Parent = SliderContainer,
-                    Position = UDim2.new(0, 0, 0, 10),
-                    Size = UDim2.new(1, 0, 0, 12),
+                    Position = UDim2.new(0, 0, 0, 7),
+                    Size = UDim2.new(1, 0, 0, 11),
                     BackgroundTransparency = 1,
                     Font = Enum.Font.GothamMedium,
                     Text = string.format("%." .. Decimals .. "f", Value) .. (Suffix ~= "" and ("" .. Suffix) or ""),
@@ -1732,26 +1752,26 @@ function Aimware:CreateWindow(cfg)
                 local Row = Create("Frame", {
                     Name = Name .. "_DropdownRow",
                     Parent = ElementsList,
-                    Size = UDim2.new(1, 0, 0, 22),
+                    Size = UDim2.new(1, 0, 0, 20),
                     BackgroundTransparency = 1
                 })
 
                 Create("TextLabel", {
                     Parent = Row,
-                    Size = UDim2.new(1, -165, 1, 0),
+                    Size = UDim2.new(1, -145, 1, 0),
                     BackgroundTransparency = 1,
                     Font = Enum.Font.GothamMedium,
                     Text = Name,
                     TextColor3 = Aimware.Theme.TextPrimary,
-                    TextSize = 12,
+                    TextSize = 11,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
 
                 local DropBtn = Create("TextButton", {
                     Parent = Row,
                     AnchorPoint = Vector2.new(1, 0.5),
-                    Position = UDim2.new(1, 0, 0.5, 0),
-                    Size = UDim2.new(0, 155, 0, 20),
+                    Position = UDim2.new(1, -2, 0.5, 0),
+                    Size = UDim2.new(0, 135, 0, 18),
                     BackgroundColor3 = Aimware.Theme.ControlBg,
                     Text = "",
                     AutoButtonColor = false
@@ -1762,13 +1782,13 @@ function Aimware:CreateWindow(cfg)
 
                 local SelectedText = Create("TextLabel", {
                     Parent = DropBtn,
-                    Position = UDim2.new(0, 8, 0, 0),
-                    Size = UDim2.new(1, -26, 1, 0),
+                    Position = UDim2.new(0, 6, 0, 0),
+                    Size = UDim2.new(1, -22, 1, 0),
                     BackgroundTransparency = 1,
                     Font = Enum.Font.GothamMedium,
                     Text = "",
                     TextColor3 = Aimware.Theme.TextPrimary,
-                    TextSize = 11,
+                    TextSize = 10,
                     TextTruncate = Enum.TextTruncate.AtEnd,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
@@ -1777,8 +1797,8 @@ function Aimware:CreateWindow(cfg)
                     Name = "Chevron",
                     Parent = DropBtn,
                     AnchorPoint = Vector2.new(1, 0.5),
-                    Position = UDim2.new(1, -6, 0.5, 0),
-                    Size = UDim2.new(0, 12, 0, 12),
+                    Position = UDim2.new(1, -5, 0.5, 0),
+                    Size = UDim2.new(0, 10, 0, 10),
                     BackgroundTransparency = 1,
                     Image = Aimware.Icons.ChevronDown,
                     ImageColor3 = Aimware.Theme.TextSecondary,
@@ -1801,7 +1821,7 @@ function Aimware:CreateWindow(cfg)
                 local DropList = Create("ScrollingFrame", {
                     Name = Name .. "_DropList",
                     Parent = OverlayLayer,
-                    Size = UDim2.new(0, 155, 0, 0),
+                    Size = UDim2.new(0, 135, 0, 0),
                     BackgroundColor3 = Aimware.Theme.WindowBg,
                     BorderSizePixel = 0,
                     Visible = false,
@@ -1957,7 +1977,7 @@ function Aimware:CreateWindow(cfg)
                 local Row = Create("Frame", {
                     Name = Name .. "_KeybindRow",
                     Parent = ElementsList,
-                    Size = UDim2.new(1, 0, 0, 22),
+                    Size = UDim2.new(1, 0, 0, 20),
                     BackgroundTransparency = 1
                 })
 
@@ -1968,7 +1988,7 @@ function Aimware:CreateWindow(cfg)
                     Font = Enum.Font.GothamMedium,
                     Text = Name,
                     TextColor3 = Aimware.Theme.TextPrimary,
-                    TextSize = 12,
+                    TextSize = 11,
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
 
@@ -1976,8 +1996,8 @@ function Aimware:CreateWindow(cfg)
                 local KeyBtn = Create("TextButton", {
                     Parent = Row,
                     AnchorPoint = Vector2.new(1, 0.5),
-                    Position = UDim2.new(1, 0, 0.5, 0),
-                    Size = UDim2.new(0, 65, 0, 18),
+                    Position = UDim2.new(1, -2, 0.5, 0),
+                    Size = UDim2.new(0, 60, 0, 18),
                     BackgroundColor3 = isBound and Aimware.Theme.Accent or Aimware.Theme.ControlBg,
                     Font = Enum.Font.GothamBold,
                     Text = isBound and (CurrentKey.Name or tostring(CurrentKey)) or "None",

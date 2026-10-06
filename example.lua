@@ -21,7 +21,7 @@ end
 local Window = Aimware:CreateWindow({
     Title = "Aimware",
     Subtitle = "v6.0",
-    Size = UDim2.new(0, 830, 0, 540),
+    Size = UDim2.new(0, 830, 0, 560),
     ToggleKey = Enum.KeyCode.Insert,
     AccentColor = Color3.fromRGB(235, 68, 77)
 })
