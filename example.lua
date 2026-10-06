@@ -6,7 +6,7 @@
 
 local Aimware
 if not pcall(function()
-    Aimware = loadstring(game:HttpGet("https://raw.githubusercontent.com/Unwalker1337/aimware-v6-ui-library-roblox/main/source.lua"))()
+    Aimware = loadstring(game:HttpGet("https://raw.githubusercontent.com/Unwalker1337/aimware-v6-ui-library-roblox/main/source.lua?nocache=" .. tick()))()
 end) or not Aimware then
     -- Fallback to local file if running within studio / testing environment
     local currentSource = script and script.Parent and script.Parent:FindFirstChild("source")

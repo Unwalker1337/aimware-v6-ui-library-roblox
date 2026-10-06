@@ -211,12 +211,29 @@ function Aimware:CreateWindow(cfg)
         ClipsDescendants = false
     })
 
-    OverlayLayer.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            for popup, closeFunc in pairs(Aimware.ActivePopups) do
-                if closeFunc then closeFunc() end
+    -- Point inside GuiObject check
+    local function IsPointInside(pos, guiObj)
+        if not guiObj or not guiObj.Visible then return false end
+        local absPos = guiObj.AbsolutePosition
+        local absSize = guiObj.AbsoluteSize
+        return pos.X >= absPos.X and pos.X <= absPos.X + absSize.X
+           and pos.Y >= absPos.Y and pos.Y <= absPos.Y + absSize.Y
+    end
+
+    -- Smart Outside-Click Dispasser: Never closes when clicking on the trigger button or inside popup!
+    UserInputService.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            local clickPos = input.Position
+            for popupId, data in pairs(Aimware.ActivePopups) do
+                local insidePopup = IsPointInside(clickPos, data.Popup)
+                local insideTrigger = IsPointInside(clickPos, data.TriggerBtn)
+                if not insidePopup and not insideTrigger then
+                    if data.Close then
+                        data.Close()
+                    end
+                    Aimware.ActivePopups[popupId] = nil
+                end
             end
-            table.clear(Aimware.ActivePopups)
         end
     end)
 
@@ -488,9 +505,38 @@ function Aimware:CreateWindow(cfg)
         })
     })
 
+    local settingsOpen = false
+    local lastSettingsToggle = 0
+
+    local function CloseSettings()
+        if not settingsOpen then return end
+        settingsOpen = false
+        lastSettingsToggle = tick()
+        SettingsPopup.Visible = false
+        SettingsBtn.ImageColor3 = self.Theme.TextSecondary
+        Aimware.ActivePopups[SettingsPopup] = nil
+    end
+
+    local function OpenSettings()
+        if settingsOpen then return end
+        settingsOpen = true
+        lastSettingsToggle = tick()
+        SettingsPopup.Visible = true
+        SettingsBtn.ImageColor3 = self.Theme.Accent
+        Aimware.ActivePopups[SettingsPopup] = {
+            Popup = SettingsPopup,
+            TriggerBtn = SettingsBtn,
+            Close = CloseSettings
+        }
+    end
+
     local function ToggleSettingsMenu()
-        SettingsPopup.Visible = not SettingsPopup.Visible
-        SettingsBtn.ImageColor3 = SettingsPopup.Visible and self.Theme.Accent or self.Theme.TextSecondary
+        if tick() - lastSettingsToggle < 0.12 then return end
+        if settingsOpen then
+            CloseSettings()
+        else
+            OpenSettings()
+        end
     end
 
     SettingsBtn.MouseButton1Click:Connect(ToggleSettingsMenu)
@@ -1603,9 +1649,12 @@ function Aimware:CreateWindow(cfg)
                 })
 
                 local isOpen = false
+                local lastToggleTime = 0
+
                 local function CloseDropdown()
                     if not isOpen then return end
                     isOpen = false
+                    lastToggleTime = tick()
                     Tween(Chevron, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
                         Rotation = 0,
                         ImageColor3 = Aimware.Theme.TextSecondary
@@ -1666,6 +1715,7 @@ function Aimware:CreateWindow(cfg)
                 local function OpenDropdown()
                     if isOpen then return end
                     isOpen = true
+                    lastToggleTime = tick()
                     PopulateOptions()
 
                     local btnAbs = DropBtn.AbsolutePosition
@@ -1686,10 +1736,15 @@ function Aimware:CreateWindow(cfg)
                         BackgroundTransparency = 0
                     })
 
-                    Aimware.ActivePopups[DropList] = CloseDropdown
+                    Aimware.ActivePopups[DropList] = {
+                        Popup = DropList,
+                        TriggerBtn = DropBtn,
+                        Close = CloseDropdown
+                    }
                 end
 
                 DropBtn.MouseButton1Click:Connect(function()
+                    if tick() - lastToggleTime < 0.12 then return end
                     if isOpen then
                         CloseDropdown()
                     else
