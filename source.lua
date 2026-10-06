@@ -471,6 +471,7 @@ function Aimware:CreateWindow(cfg)
         BackgroundColor3 = self.Theme.WindowBg,
         BorderSizePixel = 0,
         Visible = false,
+        Active = true,
         ZIndex = 900
     }, {
         Create("UICorner", { CornerRadius = UDim.new(0, 6) }),
@@ -489,16 +490,7 @@ function Aimware:CreateWindow(cfg)
 
     local function ToggleSettingsMenu()
         SettingsPopup.Visible = not SettingsPopup.Visible
-        if SettingsPopup.Visible then
-            SettingsBtn.ImageColor3 = self.Theme.Accent
-            Aimware.ActivePopups[SettingsPopup] = function()
-                SettingsPopup.Visible = false
-                SettingsBtn.ImageColor3 = self.Theme.TextSecondary
-            end
-        else
-            SettingsBtn.ImageColor3 = self.Theme.TextSecondary
-            Aimware.ActivePopups[SettingsPopup] = nil
-        end
+        SettingsBtn.ImageColor3 = SettingsPopup.Visible and self.Theme.Accent or self.Theme.TextSecondary
     end
 
     SettingsBtn.MouseButton1Click:Connect(ToggleSettingsMenu)
