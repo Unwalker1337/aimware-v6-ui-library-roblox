@@ -259,19 +259,46 @@ function Aimware:CreateWindow(cfg)
         BorderSizePixel = 0
     })
 
-    -- Aimware Red Target Logo at Top
+    -- Aimware Top Red-to-Dark Gradient on Sidebar (1:1 with Aimware v6)
+    local SidebarGradient = Create("Frame", {
+        Name = "SidebarGradient",
+        Parent = Sidebar,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, 0, 0, 200),
+        BackgroundColor3 = Color3.fromRGB(240, 75, 85),
+        BorderSizePixel = 0,
+        ZIndex = 1
+    }, {
+        Create("UICorner", { CornerRadius = UDim.new(0, 10) }),
+        Create("UIGradient", {
+            Rotation = 90,
+            Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0.0, Color3.fromRGB(240, 75, 85)),
+                ColorSequenceKeypoint.new(0.35, Color3.fromRGB(180, 50, 60)),
+                ColorSequenceKeypoint.new(0.65, Color3.fromRGB(80, 28, 38)),
+                ColorSequenceKeypoint.new(1.0, Color3.fromRGB(18, 22, 30))
+            }),
+            Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0.0, 0.0),
+                NumberSequenceKeypoint.new(0.4, 0.05),
+                NumberSequenceKeypoint.new(0.75, 0.5),
+                NumberSequenceKeypoint.new(1.0, 1.0)
+            })
+        })
+    })
+
+    -- Aimware Target Crosshair Logo (Centered at top directly on the red gradient)
     local LogoContainer = Create("Frame", {
         Name = "LogoContainer",
         Parent = Sidebar,
-        Position = UDim2.new(0, 9, 0, 9),
-        Size = UDim2.new(0, 34, 0, 34),
-        BackgroundColor3 = self.Theme.Accent,
-        BorderSizePixel = 0
+        Position = UDim2.new(0, 0, 0, 8),
+        Size = UDim2.new(1, 0, 0, 36),
+        BackgroundTransparency = 1,
+        ZIndex = 2
     }, {
-        Create("UICorner", { CornerRadius = UDim.new(0, 8) }),
         Create("ImageLabel", {
             Name = "LogoIcon",
-            Size = UDim2.new(0, 22, 0, 22),
+            Size = UDim2.new(0, 24, 0, 24),
             AnchorPoint = Vector2.new(0.5, 0.5),
             Position = UDim2.new(0.5, 0, 0.5, 0),
             BackgroundTransparency = 1,
@@ -284,9 +311,10 @@ function Aimware:CreateWindow(cfg)
     local NavContainer = Create("Frame", {
         Name = "NavContainer",
         Parent = Sidebar,
-        Position = UDim2.new(0, 0, 0, 54),
-        Size = UDim2.new(1, 0, 1, -154),
-        BackgroundTransparency = 1
+        Position = UDim2.new(0, 0, 0, 50),
+        Size = UDim2.new(1, 0, 1, -150),
+        BackgroundTransparency = 1,
+        ZIndex = 3
     }, {
         Create("UIListLayout", {
             SortOrder = Enum.SortOrder.LayoutOrder,
@@ -301,7 +329,8 @@ function Aimware:CreateWindow(cfg)
         Parent = Sidebar,
         Position = UDim2.new(0, 0, 1, -90),
         Size = UDim2.new(1, 0, 0, 84),
-        BackgroundTransparency = 1
+        BackgroundTransparency = 1,
+        ZIndex = 3
     }, {
         Create("UIListLayout", {
             SortOrder = Enum.SortOrder.LayoutOrder,
