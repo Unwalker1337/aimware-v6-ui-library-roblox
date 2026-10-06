@@ -223,7 +223,8 @@ LegitHitbox:CreateToggle({ Name = "Nearest To Crosshair", Default = false })
 local VisualsTab = Window:CreateTab({
     Name = "Visuals",
     Icon = Aimware.Icons.Visuals,
-    MasterSwitch = true
+    MasterSwitch = true,
+    MasterDefault = false
 })
 
 local VisEnemy = VisualsTab:CreateSubTab("Enemy")

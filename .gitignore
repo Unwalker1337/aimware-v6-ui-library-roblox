@@ -1,3 +1,8 @@
 .DS_Store
 Thumbs.db
 *.tmp
+icons_hq_clean/
+icons_test_output/
+icons_w_test/
+test_pipeline/
+test_*.png

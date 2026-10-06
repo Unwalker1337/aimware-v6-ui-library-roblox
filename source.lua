@@ -443,12 +443,13 @@ function Aimware:CreateWindow(cfg)
     })
 
     -- Sub-Tabs (In Header)
-    local SubTabsBar = Create("Frame", {
+    local SubTabsBar = Create("CanvasGroup", {
         Name = "SubTabsBar",
         Parent = HeaderLeft,
         Size = UDim2.new(0, 0, 1, 0),
         AutomaticSize = Enum.AutomaticSize.X,
         BackgroundTransparency = 1,
+        GroupTransparency = 0,
         LayoutOrder = 3
     }, {
         Create("UIListLayout", {
@@ -985,6 +986,13 @@ function Aimware:CreateWindow(cfg)
         SearchBox = SearchBox,
     }
 
+    -- Master Switch Global Click Handler (1:1 with Aimware v6)
+    MasterSwitchFrame.MouseButton1Click:Connect(function()
+        if WindowObj.ActiveTab and WindowObj.ActiveTab.HasMasterSwitch and WindowObj.ActiveTab.SetMaster then
+            WindowObj.ActiveTab:SetMaster(not WindowObj.ActiveTab.MasterState)
+        end
+    end)
+
     -- Search Filtering
     SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
         local query = SearchBox.Text:lower()
@@ -1023,12 +1031,16 @@ function Aimware:CreateWindow(cfg)
         local IsPinned = tabCfg.Pinned or false
         local HasMasterSwitch = tabCfg.MasterSwitch ~= false
         local MasterCallback = tabCfg.Callback or function() end
+        local MasterDefault = tabCfg.MasterDefault
+        if MasterDefault == nil then MasterDefault = tabCfg.Default end
+        if MasterDefault == nil then MasterDefault = tabCfg.Enabled end
+        if MasterDefault == nil then MasterDefault = true end
 
         local TabObj = {
             Name = TabName,
             Icon = TabIcon,
             HasMasterSwitch = HasMasterSwitch,
-            MasterState = true,
+            MasterState = MasterDefault,
             SubTabs = {},
             ActiveSubTab = nil,
             Pages = {},
@@ -1090,10 +1102,20 @@ function Aimware:CreateWindow(cfg)
             })
         })
 
+        -- CanvasGroup container for smooth dimming / graying out (1:1 with Aimware v6)
+        local PageContainer = Create("CanvasGroup", {
+            Name = "PageContainer",
+            Parent = DefaultPage,
+            Size = UDim2.new(1, 0, 0, 0),
+            AutomaticSize = Enum.AutomaticSize.Y,
+            BackgroundTransparency = 1,
+            GroupTransparency = (HasMasterSwitch and not TabObj.MasterState) and 0.55 or 0
+        })
+
         -- 2 Columns (Width ~360px each, 18px horizontal gap, 16px vertical spacing)
         local LeftCol = Create("Frame", {
             Name = "LeftColumn",
-            Parent = DefaultPage,
+            Parent = PageContainer,
             Size = UDim2.new(0.5, -9, 0, 0),
             AutomaticSize = Enum.AutomaticSize.Y,
             Position = UDim2.new(0, 0, 0, 0),
@@ -1107,7 +1129,7 @@ function Aimware:CreateWindow(cfg)
 
         local RightCol = Create("Frame", {
             Name = "RightColumn",
-            Parent = DefaultPage,
+            Parent = PageContainer,
             Size = UDim2.new(0.5, -9, 0, 0),
             AutomaticSize = Enum.AutomaticSize.Y,
             Position = UDim2.new(0.5, 9, 0, 0),
@@ -1119,8 +1141,21 @@ function Aimware:CreateWindow(cfg)
             })
         })
 
+        -- Interaction blocker when disabled
+        local Blocker = Create("Frame", {
+            Name = "DisabledBlocker",
+            Parent = DefaultPage,
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            ZIndex = 50,
+            Visible = (HasMasterSwitch and not TabObj.MasterState),
+            Active = true
+        })
+
         TabObj.DefaultPage = {
             Frame = DefaultPage,
+            Container = PageContainer,
+            Blocker = Blocker,
             LeftCol = LeftCol,
             RightCol = RightCol,
             Sections = {}
@@ -1154,6 +1189,26 @@ function Aimware:CreateWindow(cfg)
 
             for _, child in ipairs(SubTabsBar:GetChildren()) do
                 if child:IsA("GuiObject") then child:Destroy() end
+            end
+
+            local targetTrans = (HasMasterSwitch and not TabObj.MasterState) and 0.55 or 0.0
+            SubTabsBar.GroupTransparency = targetTrans
+
+            if TabObj.DefaultPage then
+                if TabObj.DefaultPage.Container then
+                    TabObj.DefaultPage.Container.GroupTransparency = targetTrans
+                end
+                if TabObj.DefaultPage.Blocker then
+                    TabObj.DefaultPage.Blocker.Visible = (HasMasterSwitch and not TabObj.MasterState)
+                end
+            end
+            for _, p in pairs(TabObj.Pages) do
+                if p.Container then
+                    p.Container.GroupTransparency = targetTrans
+                end
+                if p.Blocker then
+                    p.Blocker.Visible = (HasMasterSwitch and not TabObj.MasterState)
+                end
             end
 
             if #TabObj.SubTabs > 0 then
@@ -1198,18 +1253,42 @@ function Aimware:CreateWindow(cfg)
         TabObj.ActiveBar = ActiveBar
         TabObj.IconImg = IconImg
 
-        MasterSwitchFrame.MouseButton1Click:Connect(function()
-            if WindowObj.ActiveTab == TabObj and HasMasterSwitch then
-                TabObj.MasterState = not TabObj.MasterState
-                local targetColor = TabObj.MasterState and Aimware.Theme.Accent or Aimware.Theme.SwitchOff
-                local targetPos = TabObj.MasterState and UDim2.new(1, -13, 0.5, -5.5) or UDim2.new(0, 2, 0.5, -5.5)
+        function TabObj:SetMaster(state)
+            if not HasMasterSwitch then return end
+            TabObj.MasterState = state
+            local enabled = state
+            local targetColor = enabled and Aimware.Theme.Accent or Aimware.Theme.SwitchOff
+            local targetPos = enabled and UDim2.new(1, -13, 0.5, -5.5) or UDim2.new(0, 2, 0.5, -5.5)
 
-                Tween(MasterSwitchFrame, TweenInfo.new(0.18), { BackgroundColor3 = targetColor })
-                Tween(MasterSwitchThumb, TweenInfo.new(0.18), { Position = targetPos })
+            Tween(MasterSwitchFrame, TweenInfo.new(0.18), { BackgroundColor3 = targetColor })
+            Tween(MasterSwitchThumb, TweenInfo.new(0.18), { Position = targetPos })
 
-                MasterCallback(TabObj.MasterState)
+            for popupId, data in pairs(Aimware.ActivePopups) do
+                if data.Close then data.Close() end
+                Aimware.ActivePopups[popupId] = nil
             end
-        end)
+
+            local targetTrans = enabled and 0.0 or 0.55
+            Tween(SubTabsBar, TweenInfo.new(0.22, Enum.EasingStyle.Quad), { GroupTransparency = targetTrans })
+
+            if TabObj.DefaultPage and TabObj.DefaultPage.Container then
+                Tween(TabObj.DefaultPage.Container, TweenInfo.new(0.22, Enum.EasingStyle.Quad), { GroupTransparency = targetTrans })
+                if TabObj.DefaultPage.Blocker then
+                    TabObj.DefaultPage.Blocker.Visible = not enabled
+                end
+            end
+
+            for _, p in pairs(TabObj.Pages) do
+                if p.Container then
+                    Tween(p.Container, TweenInfo.new(0.22, Enum.EasingStyle.Quad), { GroupTransparency = targetTrans })
+                    if p.Blocker then
+                        p.Blocker.Visible = not enabled
+                    end
+                end
+            end
+
+            MasterCallback(enabled)
+        end
 
         function TabObj:CreateSubTab(subName)
             table.insert(TabObj.SubTabs, subName)
@@ -1234,9 +1313,18 @@ function Aimware:CreateWindow(cfg)
                 })
             })
 
+            local SubPageContainer = Create("CanvasGroup", {
+                Name = "PageContainer",
+                Parent = SubPage,
+                Size = UDim2.new(1, 0, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                BackgroundTransparency = 1,
+                GroupTransparency = (HasMasterSwitch and not TabObj.MasterState) and 0.55 or 0.0
+            })
+
             local SubLeftCol = Create("Frame", {
                 Name = "LeftColumn",
-                Parent = SubPage,
+                Parent = SubPageContainer,
                 Size = UDim2.new(0.5, -9, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
                 Position = UDim2.new(0, 0, 0, 0),
@@ -1250,7 +1338,7 @@ function Aimware:CreateWindow(cfg)
 
             local SubRightCol = Create("Frame", {
                 Name = "RightColumn",
-                Parent = SubPage,
+                Parent = SubPageContainer,
                 Size = UDim2.new(0.5, -9, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
                 Position = UDim2.new(0.5, 9, 0, 0),
@@ -1262,8 +1350,21 @@ function Aimware:CreateWindow(cfg)
                 })
             })
 
+            -- Interaction blocker when disabled
+            local SubBlocker = Create("Frame", {
+                Name = "DisabledBlocker",
+                Parent = SubPage,
+                Size = UDim2.new(1, 0, 1, 0),
+                BackgroundTransparency = 1,
+                ZIndex = 50,
+                Visible = (HasMasterSwitch and not TabObj.MasterState),
+                Active = true
+            })
+
             local PageData = {
                 Frame = SubPage,
+                Container = SubPageContainer,
+                Blocker = SubBlocker,
                 LeftCol = SubLeftCol,
                 RightCol = SubRightCol,
                 Sections = {}
