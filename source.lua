@@ -1549,14 +1549,16 @@ function Aimware:CreateWindow(cfg)
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
 
-                Create("ImageLabel", {
+                local Chevron = Create("ImageLabel", {
+                    Name = "Chevron",
                     Parent = DropBtn,
                     AnchorPoint = Vector2.new(1, 0.5),
                     Position = UDim2.new(1, -6, 0.5, 0),
                     Size = UDim2.new(0, 12, 0, 12),
                     BackgroundTransparency = 1,
                     Image = Aimware.Icons.ChevronDown,
-                    ImageColor3 = Aimware.Theme.TextSecondary
+                    ImageColor3 = Aimware.Theme.TextSecondary,
+                    Rotation = 0
                 })
 
                 local function UpdateDisplayText()
@@ -1572,15 +1574,19 @@ function Aimware:CreateWindow(cfg)
                 end
                 UpdateDisplayText()
 
-                local DropList = Create("Frame", {
+                local DropList = Create("ScrollingFrame", {
                     Name = Name .. "_DropList",
                     Parent = OverlayLayer,
                     Size = UDim2.new(0, 155, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
                     BackgroundColor3 = Aimware.Theme.WindowBg,
                     BorderSizePixel = 0,
                     Visible = false,
-                    ZIndex = 700
+                    ZIndex = 700,
+                    ClipsDescendants = true,
+                    ScrollBarThickness = 2,
+                    ScrollBarImageColor3 = Color3.fromRGB(45, 56, 72),
+                    CanvasSize = UDim2.new(0, 0, 0, 0),
+                    AutomaticCanvasSize = Enum.AutomaticSize.Y
                 }, {
                     Create("UICorner", { CornerRadius = UDim.new(0, 4) }),
                     Create("UIStroke", { Color = Aimware.Theme.WindowStroke, Thickness = 1 }),
@@ -1595,6 +1601,26 @@ function Aimware:CreateWindow(cfg)
                         Padding = UDim.new(0, 2)
                     })
                 })
+
+                local isOpen = false
+                local function CloseDropdown()
+                    if not isOpen then return end
+                    isOpen = false
+                    Tween(Chevron, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                        Rotation = 0,
+                        ImageColor3 = Aimware.Theme.TextSecondary
+                    })
+                    local closeTw = Tween(DropList, TweenInfo.new(0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+                        Size = UDim2.new(0, 155, 0, 0),
+                        BackgroundTransparency = 1
+                    })
+                    closeTw.Completed:Connect(function()
+                        if not isOpen then
+                            DropList.Visible = false
+                        end
+                    end)
+                    Aimware.ActivePopups[DropList] = nil
+                end
 
                 local function PopulateOptions()
                     for _, child in ipairs(DropList:GetChildren()) do
@@ -1630,26 +1656,44 @@ function Aimware:CreateWindow(cfg)
                             else
                                 Selected = opt
                                 UpdateDisplayText()
-                                DropList.Visible = false
-                                Aimware.ActivePopups[DropList] = nil
+                                CloseDropdown()
                                 Callback(Selected)
                             end
                         end)
                     end
                 end
 
+                local function OpenDropdown()
+                    if isOpen then return end
+                    isOpen = true
+                    PopulateOptions()
+
+                    local btnAbs = DropBtn.AbsolutePosition
+                    local mainAbs = MainFrame.AbsolutePosition
+                    DropList.Position = UDim2.new(0, btnAbs.X - mainAbs.X, 0, (btnAbs.Y - mainAbs.Y) + DropBtn.AbsoluteSize.Y + 4)
+
+                    local targetHeight = math.clamp(#Options * 22 + 8, 20, 180)
+                    DropList.Size = UDim2.new(0, 155, 0, 0)
+                    DropList.BackgroundTransparency = 1
+                    DropList.Visible = true
+
+                    Tween(Chevron, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                        Rotation = 180,
+                        ImageColor3 = Aimware.Theme.Accent
+                    })
+                    Tween(DropList, TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                        Size = UDim2.new(0, 155, 0, targetHeight),
+                        BackgroundTransparency = 0
+                    })
+
+                    Aimware.ActivePopups[DropList] = CloseDropdown
+                end
+
                 DropBtn.MouseButton1Click:Connect(function()
-                    DropList.Visible = not DropList.Visible
-                    if DropList.Visible then
-                        local btnAbs = DropBtn.AbsolutePosition
-                        local mainAbs = MainFrame.AbsolutePosition
-                        DropList.Position = UDim2.new(0, btnAbs.X - mainAbs.X, 0, (btnAbs.Y - mainAbs.Y) + DropBtn.AbsoluteSize.Y + 4)
-                        PopulateOptions()
-                        Aimware.ActivePopups[DropList] = function()
-                            DropList.Visible = false
-                        end
+                    if isOpen then
+                        CloseDropdown()
                     else
-                        Aimware.ActivePopups[DropList] = nil
+                        OpenDropdown()
                     end
                 end)
 
